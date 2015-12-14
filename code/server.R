@@ -11,7 +11,7 @@ library(ggplot2)
 library(reshape2)
 library(dplyr)
 
-newdata <- read.csv2("pData.csv")
+newdata <- read.csv2("../data/pData.csv")
 pets_df <- newdata
 bigS <- c("CA1192", "CA1612", "CA1714", "CA607",
           "CA673", "CA763", "CA774",

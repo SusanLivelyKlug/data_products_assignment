@@ -31,7 +31,7 @@ shinyUI(fluidPage(
 
                helpText("The shelter data has been collected through a REST API from petfinder.com.
                         It has been pre-examined and cleaned to include interesting shelters for the
-                        purposes of this class project.  Future enhancements are being in the works.
+                        purposes of this class project.
                         Also for the purposes of this assignment this graph is using pre-downloaded
                         and cleaned data so that the number of petfinder key uses is not exceeded.")
           ),
