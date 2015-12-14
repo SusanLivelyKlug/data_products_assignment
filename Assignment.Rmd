@@ -7,7 +7,7 @@ output: html_document
 
 Shiny / Slidify assignment for Coursera Data Products class.
 
-My submission for the assignment as a shiny application can be found at <http://slivelyklug.shinyapp.io/petData>.
+My submission for the assignment as a shiny application can be found at <https://slivelyklug.shinyapps.io/data_products_assignment>
 
 #Assignment:
 
