@@ -1,0 +1,162 @@
+---
+title: "petData"
+author: "Susan Lively Klug"
+date: "December 14, 2015"
+output: html_document
+---
+
+###petData, a Shiny and Slidify assignment for Coursera Data Products class.
+
+My submission for the assignment as a shiny application can be found at <http://slivelyklug.shinyapp.io/petData>.
+
+#Purpose
+
+##Viewing data about adoptable pets in animal shelters.
+
+The data for this assignment is found through petfinder.com's API, they are
+sent data about adoptable pets from animal shelters and rescue organizations
+who wish to participate.  The website <http://www.petfinder.com> allows the 
+user to search specific details about a desired future pet and displays 
+contact information for adoption along with details and usually pictures of
+matches.  
+
+I am interested in how many overall adoptable pets there are, in a varity of 
+locations and how many are male, female, how old they are.  I would like to 
+know how long they have been in the shelter and the results for adoptions or otherwise.  However some of that information is not made readily available to 
+the public.  Petfinder does allow some kinds of queries and for the purpose of
+this assignment I chose to make a simple app that shows a subset of shelters
+in the California area with interesting data.  To preserve the number of hits
+using my key on petfinder I retrieved the data I wished to view and saved it as 
+a data file.  This means the shiny app will not show current data, but a snapshot
+of a single day.
+
+Future expansions are already in the plans, the kinds of enhancements and 
+possible interactivity is exciting.
+
+#This Shiny application
+
+##Working petData
+
+petData 1.0:
+
+* Upon launching shows an interactive widget on the right hand side
+where the user may click on a radio button to choose a specific shelter.
+* The top graph on the left side is static data of all available shelters in our
+subset of the data.  
+* The bottom graph on the left displays the types of animals
+available at the shelter chosen by user, broken down into the reported sex of the
+pet.  
+* The shelter ID is also shown above the bottom graph confirming that the
+data is for the chosen shelter.
+
+petData future:  
+
+* reactiveUI instead of static shelter ID list.
+* Clicking on graphs to drill down to age, or showing age as a subset of sex.
+* US map with data displaying based on hover or click on State.
+
+petData tech:
+
+To retrieve and clean the data, choose the shelters and find their names lots
+of work was done on the command line.  This is poor form and will be resolved
+in petData future editions wherein I can use my key to get live data and make
+a reactiveUI.  In the meantime documentation about steps used to retrieve and
+create the data is definitely wanted.  So here's the ugly brain dump truth.
+
+```{r eval=FALSE}
+xml.url <- "http://api.petfinder.com/pet.find?key=72609e7b0d2fac5982ee204316157c6d&id=CA803&count=1000&output=full&location=CA"
+xmlfile <- xmlTreeParse(xml.url)
+xmltop = xmlRoot(xmlfile)
+```
+
+Take the pets section.
+
+```{r eval=FALSE}
+pets <- xmltop[[3]]
+petcatalog <- xmlSApply(pets, function(x) xmlSApply(x, xmlValue))
+```
+
+Put the data into a data-frame
+
+```{r eval=FALSE}
+pets_df <- data.frame(t(petcatalog),row.names=NULL)
+unique(pets_df$shelterId)
+```
+
+Selected only the columns I care about.
+
+```{r eval=FALSE}
+df$size <- as.character(df$size)
+df$size <- as.factor(df$size)
+```
+
+Using dplyr select.
+
+```{r eval=FALSE}
+mydata <- select(df, id:size)
+```
+
+Then lots of as.character, as.factors to convert the lists, find the better way asap.
+
+```{r eval=FALSE}
+mydata$sex <- as.character(mydata$sex)
+mydata$sex <- as.factor(mydata$sex)
+mydata$size <- as.character(mydata$size)
+mydata$size <- as.factor(mydata$size)
+mydata$age <- as.character(mydata$age)
+mydata$age <- as.factor(mydata$age)
+mydata$breeds <- as.character(mydata$breeds)
+mydata$animal <- as.character(mydata$animal)
+mydata$animal <- as.factor(mydata$animal)
+mydata$name <- as.character(mydata$name)
+mydata$shelterPetId <- as.character(mydata$shelterPetId)
+
+class(mydata$id)
+# [1] "numeric"
+class(mydata$shelterId)
+# [1] "list"
+
+mydata$shelterId <- as.character(mydata$shelterId)
+mydata$shelterId <- as.factor(mydata$shelterId)
+```
+
+Use test data set until app is running so I don't burn up my key.
+Save data some different ways.
+
+```{r eval=FALSE}
+dump(mydata, "petsTestData.Rdmpd")
+pets_df <- source("petsTestData.Rdmpd")
+write.csv2(mydata, "pData.csv")
+
+newdata <- read.csv2("pData.csv")
+pets_df <- newdata
+```
+
+todo save and read in new data file....
+
+todo reactiveUI - had it putting the shelterIds in the UI but the radio button
+wasn't sending back the data to the server.
+
+todo would like to have checkBox of shelters instead of just one.
+
+todo if you run summary(mydata$shelterId) you will see many that have only 1 entry.
+
+```{r eval=FALSE}
+summary(mydata$shelterId)
+
+# CA107 CA1192 CA1271 CA1280 CA1303 CA1365 CA1489 CA1522 CA1556 CA1612
+# 20     23     18      1      2      3      8     12      2     54
+# CA1626  CA166 CA1714 CA1794 CA1850 CA1910  CA193 CA2031 CA2162 CA2210
+# 1      1     56      1     14      5     18      4      9      1
+# CA2224 CA2260 CA2281 CA2329 CA2356 CA2382 CA2386 CA2395  CA250  CA434
+# 20     12      1     11     15      2     33      2      1      8
+# CA436  CA607  CA673  CA716  CA741  CA763  CA766  CA774  CA901  CA914
+# 28     88     34      1      3    135    200     56     15      1
+# CA990  MS113  NV160  WA526
+# 78      1      1      1
+
+bigS <- c("CA1192", "CA1612", "CA1714", "CA607",
+          "CA673", "CA763", "CA774",
+          "CA436", "CA2386", "CA990", "CA766")
+mydata <- filter(pets_df, shelterId %in% bigS)
+```
